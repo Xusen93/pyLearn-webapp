@@ -197,7 +197,8 @@
 	},
 	"expanded_folders":
 	[
-		"/F/GitHub/pyLearn-webapp/www"
+		"/F/GitHub/pyLearn-webapp/www",
+		"/F/GitHub/pyLearn-webapp/www/templates"
 	],
 	"file_history":
 	[
@@ -276,7 +277,7 @@
 				{
 					"buffer": 0,
 					"file": "app.py",
-					"semi_transient": true,
+					"semi_transient": false,
 					"settings":
 					{
 						"buffer_size": 4783,
@@ -286,12 +287,13 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								385,
+								385
 							]
 						],
 						"settings":
 						{
+							"auto_complete": false,
 							"c_time":
 							[
 								128,
@@ -344,7 +346,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 57.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
