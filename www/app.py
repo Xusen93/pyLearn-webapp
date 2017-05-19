@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-10 17:23:14
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-17 19:43:42
+# @Last Modified time: 2017-05-19 18:05:48
 '''
 async web application.
 '''
@@ -111,7 +111,7 @@ async def response_factory(app, handler):
 def datetime_filter(t):
     delta = int(time.time() - t)
     if delta < 60:
-        return u'1分钟前'
+        return u'1分钟前'#u前缀表示unicode字符串
     if delta < 3600:
         return u'%s分钟前' % (delta // 60)
     if delta < 86400:
