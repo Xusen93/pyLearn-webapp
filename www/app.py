@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-10 17:23:14
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-19 18:05:48
+# @Last Modified time: 2017-05-22 21:36:02
 '''
 async web application.
 '''
@@ -19,9 +19,12 @@ from datetime import datetime
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 
+from config import configs
+
 import orm
 from coroweb import add_routes, add_static
 
+from handlers import cookie2user, COOKIE_NAME
 
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
@@ -53,6 +56,21 @@ async def logger_factory(app, handler):
         return (await handler(request))
     return logger
 
+
+async def auth_factory(app,handler):
+    async def auth(request):
+        logging.info('check user: %s %s' %(request.method,request.path))
+        request.__user__=None
+        cookie_str=request.cookies.get(COOKIE_NAME)
+        if cookie_str:
+            user=await cookie2user(cookie_str)
+            if user:
+                logging.info('set current user: %s' % user.email)
+                request.__user__=user
+        if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
+            return web.HTTPFound('/signin')
+        return await handler(request)
+    return auth
 
 async def data_factory(app, handler):
     async def parse_data(request):
@@ -95,8 +113,8 @@ async def response_factory(app, handler):
                     template).render(**r).encode('utf-8'))
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp
-        if isinstance(r, int) and r >= 100 and r < 600:
-            return web.Response(r)
+        if isinstance(r, int) and t >= 100 and t < 600:
+            return web.Response(t)
         if isinstance(r, tuple) and len(r) == 2:
             t, m = r
             if isinstance(t, int) and t >= 100 and t < 600:

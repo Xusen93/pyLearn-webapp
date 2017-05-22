@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-17 17:50:43
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-17 17:52:41
+# @Last Modified time: 2017-05-22 17:08:14
 import asyncio
 import os
 import inspect
@@ -176,7 +176,7 @@ def add_route(app, fn):
 def add_routes(app, module_name):
     n = module_name.rfind('.')
     if n == (-1):
-        mod = __import__(module_name, globals(), locals())
+        mod = __import__(module_name, globals(), locals())#动态导入模块
     else:
         name = module_name[n+1:]
         mod = getattr(__import__(
