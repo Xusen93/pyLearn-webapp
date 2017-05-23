@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-17 17:05:09
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-22 21:56:04
+# @Last Modified time: 2017-05-23 13:42:11
 'url handlers'
 import re
 import time
@@ -30,11 +30,10 @@ def user2cookie(user, max_age):
     expires = str(int(time.time()+max_age))
     s = '%s-%s-%s-%s' % (user.id, user.passwd, expires, _COOKIE_KEY)
     L = [user.id, expires, hashlib.sha1(s.encode('utf-8')).hexdigest()]
-    return '-'.join(L)
+    return '-'.join(L)#以-为连接符，将L中的元素连接成字符串
 
 
-@asyncio.coroutine
-def cookie2user(cookie_str):
+async def cookie2user(cookie_str):
     '''
     Parse cookie and load user if cookie is valid
     '''
@@ -47,7 +46,7 @@ def cookie2user(cookie_str):
         uid, expires, sha1 = L
         if int(expires) < time.time():
             return None
-        user = yield from User.find(uid)
+        user = await User.find(uid)
         if user is None:
             return None
         s = '%s-%s-%s-%s' % (uid, user.passwd, expires, _COOKIE_KEY)
@@ -74,7 +73,8 @@ def index(request):
     ]
     return {
         '__template__': 'blogs.html',
-        'blogs': blogs
+        'blogs': blogs,
+        '__user__':request.__user__
     }
 
 
@@ -123,7 +123,8 @@ async def authenticate(*, email, passwd):
 def signout(request):
     referer = request.headers.get('Referer')
     r = web.HTTPFound(referer or '/')
-    r.set_cookie(COOKIE_NAME, '-delected-', max_age=0, httponly=True)
+    # r.set_cookie(COOKIE_NAME, '-deleted-', max_age=0, httponly=True)
+    r.del_cookie(COOKIE_NAME)
     logging.info('user signed out.')
     return r
 

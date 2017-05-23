@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-10 17:23:14
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-22 21:36:02
+# @Last Modified time: 2017-05-23 12:38:57
 '''
 async web application.
 '''
@@ -25,6 +25,7 @@ import orm
 from coroweb import add_routes, add_static
 
 from handlers import cookie2user, COOKIE_NAME
+
 
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
@@ -53,24 +54,25 @@ async def logger_factory(app, handler):
     async def logger(request):
         logging.info('Request: %s %s' % (request.method, request.path))
         # await asyncio.sleep(0.3)
-        return (await handler(request))
+        return await handler(request)
     return logger
 
 
-async def auth_factory(app,handler):
+async def auth_factory(app, handler):
     async def auth(request):
-        logging.info('check user: %s %s' %(request.method,request.path))
-        request.__user__=None
-        cookie_str=request.cookies.get(COOKIE_NAME)
+        logging.info('check user: %s %s' % (request.method, request.path))
+        request.__user__ = None
+        cookie_str = request.cookies.get(COOKIE_NAME)
         if cookie_str:
-            user=await cookie2user(cookie_str)
+            user = await cookie2user(cookie_str)
             if user:
                 logging.info('set current user: %s' % user.email)
-                request.__user__=user
+                request.__user__ = user
         if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
             return web.HTTPFound('/signin')
         return await handler(request)
     return auth
+
 
 async def data_factory(app, handler):
     async def parse_data(request):
@@ -81,7 +83,7 @@ async def data_factory(app, handler):
             elif request.content_type.startswith('application/x-www-form-urlencoded'):
                 request.__data__ = await request.post()
                 logging.info('request form: %s' % str(request.__data__))
-        return (await handler(request))
+        return await handler(request)
     return parse_data
 
 
@@ -129,7 +131,7 @@ async def response_factory(app, handler):
 def datetime_filter(t):
     delta = int(time.time() - t)
     if delta < 60:
-        return u'1分钟前'#u前缀表示unicode字符串
+        return u'1分钟前'  # u前缀表示unicode字符串
     if delta < 3600:
         return u'%s分钟前' % (delta // 60)
     if delta < 86400:
@@ -143,7 +145,7 @@ def datetime_filter(t):
 async def init(loop):
     await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='root', password='root', db='awesome')
     app = web.Application(loop=loop, middlewares=[
-        logger_factory, response_factory
+        logger_factory, auth_factory, response_factory
     ])
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers')
