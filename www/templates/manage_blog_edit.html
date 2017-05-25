@@ -14,14 +14,15 @@ function initVM(blog) {
     var vm = new Vue({
         el: '#vm',
         data: blog,
-        method: {
+        methods: {
             submit: function(event) {
                 event.preventDefault();
                 var $form = $('#vm').find('form');
                 $form.postJSON(action, this.$data, function(err, r) {
                     if (err) {
                         $form.showFormError(err);
-                    } else {
+                    } 
+                    else {
                         return location.assign('/manage/blogs');
                     }
                 });
@@ -40,7 +41,8 @@ $(function() {
             $('#loading').hide();
             initVM(blog);
         });
-    } else {
+    } 
+    else {
         $('#loading').hide();
         initVM({
             name: '',

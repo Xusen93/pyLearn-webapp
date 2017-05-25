@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-17 17:05:09
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-24 13:27:01
+# @Last Modified time: 2017-05-25 10:23:49
 'url handlers'
 import re
 import time
@@ -88,21 +88,19 @@ async def cookie2user(cookie_str):
 
 
 @get('/')
-async def index(request,*,page='1'):
-    page_index=get_page_index(page)
-    num=await Blog.findNumber('count(id)')
-    page=Page(num)
-    if num==0:
-        blogs=[]
+async def index(*, page='1'):
+    page_index = get_page_index(page)
+    num = await Blog.findNumber('count(id)')
+    page = Page(num, page_index)
+    if num == 0:
+        blogs = []
     else:
-        blogs=await Blog.findAll(orderBy='created_at desc',limit=(page.offset,page.limit))
+        blogs = await Blog.findAll(orderBy='created_at desc', limit=(page.offset, page.limit))
     return{
-        '__template__':'blogs.html',
-        'page':page,
-        'blogs':blogs,
-        '__user__':request.__user__
+        '__template__': 'blogs.html',
+        'page': page,
+        'blogs': blogs
     }
-
 
 
 @get('/blog/{id}')
@@ -193,12 +191,11 @@ def manage_blogs(*, page='1'):
 
 
 @get('/manage/blogs/create')
-def manage_create_blog(request):
+def manage_create_blog():
     return{
         '__template__': 'manage_blog_edit.html',
         'id': '',
-        'action': '/api/blogs',
-        '__user__': request.__user__
+        'action': '/api/blogs'
     }
 
 
@@ -214,7 +211,7 @@ def manage_edit_blog(*, id):
 @get('/manage/users')
 def manage_uesrs(*, page='1'):
     return{
-        '__template__': 'manage_uesrs.html',
+        '__template__': 'manage_users.html',
         'page_index': get_page_index(page)
     }
 
@@ -240,7 +237,8 @@ async def api_create_comment(id, request, *, content):
     blog = await Blog.find(id)
     if blog is None:
         raise APIResourceNotFoundError('Blog')
-    comment = Comment(blog_id=blog.id, user_id=user.id, user_name=user.name, user_image=user.image, content=content.strip())
+    comment = Comment(blog_id=blog.id, user_id=user.id, user_name=user.name,
+                      user_image=user.image, content=content.strip())
     await comment.save()
     return comment
 
@@ -349,8 +347,10 @@ async def api_update_blog(id, request, *, name, summary, content):
 
 
 @post('/api/blogs/{id}/delete')
-async def api_delete_blog(request, *, id):
+async def api_delete_blog(id,request):
     check_admin(request)
-    blog = await blog.find(id)
+    blog = await Blog.find(id)
+    if blog is None:
+        raise APIResourceNotFoundError('Blog')
     await blog.remove()
     return dict(id=id)

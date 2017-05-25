@@ -18,11 +18,7 @@ function initVM(data) {
 
 $(function() {
     getJSON('/api/users', {
-        page: {
-            {
-                page_index
-            }
-        }
+        page: {{page_index}}
     }, function(err, results) {
         if (err) {
             return fatal(err);
@@ -67,6 +63,9 @@ $(function() {
                 </td>
                 <td>
                     <a v-attr="href:'mailto:'+user.email" v-text="user.email"></a>
+                </td>
+                <td>
+                    <span v-text="user.created_at.toDateTime()"></span>
                 </td>
             </tr>
         </tbody>

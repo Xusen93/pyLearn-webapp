@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-23 20:52:28
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-24 15:49:36
+# @Last Modified time: 2017-05-24 20:34:41
 import os
 import sys
 import time
@@ -17,17 +17,14 @@ def log(s):
 
 class MyFileSystemEventHander(FileSystemEventHandler):
 
-    def __init__(self, fn):
+    def __init__(self, fn, filetype):
         super(MyFileSystemEventHander, self).__init__()
         self.restart = fn
+        self.filetype = filetype
 
     def on_any_event(self, event):
-        if event.src_path.endswith('.py'):
-            log('Python source file changed: %s' % event.src_path)
-            self.restart()
-
-        if event.src_path.endswith('.html'):
-            log('Html templates file changed: %s' % event.src_path)
+        if event.src_path.endswith(self.filetype):
+            log('%s file changed: %s' % (self.filetype, event.src_path))
             self.restart()
 
 command = ['echo', 'ok']
@@ -46,9 +43,10 @@ def kill_process():
 
 def start_process():
     global process, command
-    log('Start process %s...' % ' '.join(command))
     process = subprocess.Popen(
         command, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+    log('Start process [%s] at %s >>> %s' % (process.pid, time.strftime(
+        '%Y-%m-%d %H:%M:%S', time.localtime(time.time())), ' '.join(command)))
 
 
 def restart_process():
@@ -56,22 +54,22 @@ def restart_process():
     start_process()
 
 
-def start_watch(path, callback):
+def start_watch(path, filetype, callback):
     observer = [Observer() for p in path]
-    for p, ob in zip(path, observer):
+    for p, ob, ft in zip(path, observer, filetype):
         ob.schedule(MyFileSystemEventHander(
-            restart_process), p, recursive=True)
+            restart_process, ft), p, recursive=True)
         ob.start()
-        log('Watching directory %s...' % p)
+        log('Watching %s files in %s...' % (ft, p))
     start_process()
     try:
         while True:
             time.sleep(0.5)
     except KeyboardInterrupt:
-        for o in observer:
-            o.stop()
-    for o in observer:
-        o.join()
+        for ob in observer:
+            ob.stop()
+    for ob in observer:
+        ob.join()
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
@@ -83,4 +81,7 @@ if __name__ == '__main__':
     command = argv
     path_www = os.path.abspath('.')
     path_templates = '\\'.join([path_www, 'templates'])
-    start_watch([path_www, path_templates], None)
+    path = [path_www, path_templates]
+    filetype = ['.py', '.html']
+    # monitor \www\*.py,\www\templates\*.html
+    start_watch(path, filetype, None)

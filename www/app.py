@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-10 17:23:14
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-23 21:17:00
+# @Last Modified time: 2017-05-24 21:32:52
 '''
 async web application.
 '''
@@ -111,6 +111,7 @@ async def response_factory(app, handler):
                 resp.content_type = 'application/json;charset=utf-8'
                 return resp
             else:
+                r['__user__'] = request.__user__
                 resp = web.Response(body=app['__templating__'].get_template(
                     template).render(**r).encode('utf-8'))
                 resp.content_type = 'text/html;charset=utf-8'
