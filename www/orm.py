@@ -2,7 +2,7 @@
 # @Author: Xusen
 # @Date:   2017-05-15 14:55:47
 # @Last Modified by:   Xusen
-# @Last Modified time: 2017-05-15 19:50:05
+# @Last Modified time: 2017-05-27 12:42:30
 
 import asyncio
 import logging
@@ -35,7 +35,7 @@ async def select(sql, args, size=None):
     global __pool
     async with __pool.get() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
-            await cur.execute(sql.replace('?', '%s'), args or ())
+            await cur.execute(sql.replace('?', '%s'), args or ())#sql的占位符是?,MySQL的是%s
             if size:
                 rs = await cur.fetchmany(size)
             else:
@@ -45,6 +45,9 @@ async def select(sql, args, size=None):
 
 
 async def execute(sql, args, autocommit=True):
+    '''
+    执行INSERT、UPDATE、DELETE
+    '''
     log(sql)
     async with __pool.get() as conn:
         if not autocommit:
